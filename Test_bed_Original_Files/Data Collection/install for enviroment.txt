@@ -1,0 +1,7 @@
+# These are packages that are necessary to run the code.
+#Recommend using Anaconda to manage the python enviroments
+# Mujoco py needs linux or mac to run. Windows is deprecated
+
+conda install -c conda-forge opencv -y
+conda install pywin32 -y
+pip install gym dynamixel-sdk ipykernel pandas numpy matplotlib  keyboard
