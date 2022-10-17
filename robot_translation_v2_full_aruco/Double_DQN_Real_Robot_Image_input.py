@@ -40,8 +40,8 @@ Memory = DQN_Memory(10000)
 class Agent:
     action_list = [0, 1, 2, 3, 4, 5, 6, 7]
     max_grad_norm = 0.5
-    min_step = 300
-    max_step = 700
+    min_step = 300  # Minimum Step that motor can reach
+    max_step = 700  # Maximum Step that motor can reach
     step_size = 40
 
     def __init__(self):
@@ -50,7 +50,6 @@ class Agent:
         self.eval_net, self.target_net = Net.float(), Net.float()
         self.memory = Memory
         self.optimizer = optim.Adam(self.eval_net.parameters(), lr=8e-4)
-        # self.position = [0, 0, 0, 0]
 
     def select_action(self, state, angle_steps):
         action_index = 0
@@ -58,6 +57,8 @@ class Agent:
 
         # put all valid options into an array
         options = []
+
+        # Option Filtering to avoid actions out of motor operation range before exploration.
         for i in range(4):
             if self.max_step - self.step_size >= angle_steps[i] >= self.min_step + self.step_size:
                 options.append(2 * i)
@@ -88,6 +89,8 @@ class Agent:
             print(action_index)
             print("--------------ACTION INDEX ENDS------------")
 
+        # During exploitation, the network still might choose invalid action. In these cases,
+        # force the motor to return / stop within the valid operation range.
         if action_index == 0:
             angle_steps[0] -= self.step_size
             if angle_steps[0] < self.min_step:

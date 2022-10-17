@@ -66,14 +66,12 @@ class Agent:
                 options.append(2 * i)
 
         if np.random.random() < self.epsilon:
-            # print("now exploring!")
             if len(options) != 0:
                 action_index = np.random.choice(options)
             else:
                 print("No action to be taken, impossible here")
                 action_index = np.random.randint(8)
         else:
-            # print("now finding the best!")
             probs = self.eval_net(state)
             options_list = probs.detach().numpy()[0].tolist()
             sorted_list = heapq.nlargest(len(options_list), options_list)
@@ -81,7 +79,7 @@ class Agent:
                 if options_list.index(i) in options:
                     action_index = options_list.index(i)
                     break
-            # action_index = probs.max(1)[1].item()
+
             print("--------------ACTION INDEX------------")
             print(state)
             print(probs)
@@ -143,7 +141,7 @@ class Agent:
             if options_list.index(i) in options:
                 action_index = options_list.index(i)
                 break
-        # action_index = probs.max(1)[1].item()
+
         print("--------------ACTION INDEX------------")
         print(state)
         print(probs)
@@ -380,5 +378,5 @@ def test():
 
 
 if __name__ == '__main__':
-    # main()
-    test()
+    main()
+    # test()

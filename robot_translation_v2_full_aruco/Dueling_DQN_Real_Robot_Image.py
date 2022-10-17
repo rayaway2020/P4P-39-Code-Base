@@ -34,7 +34,7 @@ Transition = namedtuple('Transition', ['s', 'a', 'r', 's_'])
 torch.set_num_threads(4)
 
 Net = Duelling_DQN_Img_Net(input_size=args.input_size, num_actions=args.num_actions)
-Memory = DQN_Memory(40000)
+Memory = DQN_Memory(40)
 
 
 class Agent:
@@ -47,7 +47,7 @@ class Agent:
     def __init__(self):
         self.training_step = 0
         self.epsilon = 1
-        self.eval_net, self.target_net = Net().float(), Net().float()
+        self.eval_net, self.target_net = Net.float(), Net.float()
         self.memory = Memory
         self.optimizer = optim.Adam(self.eval_net.parameters(), lr=2e-4)
 

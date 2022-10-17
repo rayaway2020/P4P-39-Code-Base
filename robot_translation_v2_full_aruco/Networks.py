@@ -1,7 +1,7 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 
 class DQN_Net(nn.Module):
 
@@ -19,9 +19,11 @@ class DQN_Net(nn.Module):
         action_scores = a + v
         return action_scores
 
+
 class Flatten(torch.nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
+
 
 class DQN_Img_Net(nn.Module):
 
@@ -57,6 +59,7 @@ class DQN_Img_Net(nn.Module):
         x1 = self.fc1(x1)
         return x1
 
+
 class Duelling_DQN_Net(nn.Module):
 
     def __init__(self, input_size, num_actions):
@@ -71,7 +74,6 @@ class Duelling_DQN_Net(nn.Module):
         self.fc2_val = nn.Linear(in_features=256, out_features=1)
 
         self.relu = nn.ReLU()
-
 
     def forward(self, x):
         adv = self.relu(self.fc1_adv(x))
@@ -130,24 +132,24 @@ class Duelling_DQN_Img_Net(nn.Module):
 class Critic_NN(nn.Module):
     def __init__(self, input_size, hidden_size, num_actions):
         super(Critic_NN, self).__init__()
-        self.h_linear_1 = nn.Linear(in_features=input_size,     out_features=hidden_size[0])
+        self.h_linear_1 = nn.Linear(in_features=input_size, out_features=hidden_size[0])
         self.h_linear_2 = nn.Linear(in_features=hidden_size[0], out_features=hidden_size[1])
         self.h_linear_3 = nn.Linear(in_features=hidden_size[1], out_features=hidden_size[2])
         self.h_linear_4 = nn.Linear(in_features=hidden_size[2], out_features=num_actions)
 
     def forward(self, state, action):
-        x = torch.cat([state, action], dim=1)   # Concatenates the seq tensors in the given dimension
+        x = torch.cat([state, action], dim=1)  # Concatenates the seq tensors in the given dimension
         x = torch.relu(self.h_linear_1(x))
         x = torch.relu(self.h_linear_2(x))
         x = torch.relu(self.h_linear_3(x))
-        x = self.h_linear_4(x)                  # No activation function here
+        x = self.h_linear_4(x)  # No activation function here
         return x
 
 
 class Actor_NN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(Actor_NN, self).__init__()
-        self.h_linear_1 = nn.Linear(in_features=input_size,     out_features=hidden_size[0])
+        self.h_linear_1 = nn.Linear(in_features=input_size, out_features=hidden_size[0])
         self.h_linear_2 = nn.Linear(in_features=hidden_size[0], out_features=hidden_size[1])
         self.h_linear_3 = nn.Linear(in_features=hidden_size[1], out_features=hidden_size[2])
         self.bn1 = nn.BatchNorm1d(hidden_size[2])
@@ -159,6 +161,8 @@ class Actor_NN(nn.Module):
         x = torch.relu(self.bn1(self.h_linear_3(x)))
         x = torch.tanh(self.h_linear_4(x))
         return x
+
+
 # ------------------------------------------------------------------------#
 
 # -------------------Networks for SAC ------------------------------------#
@@ -222,11 +226,13 @@ class PolicyNetworkSAC(nn.Module):
         x = torch.relu(self.linear1(state))
         x = torch.relu(self.linear2(x))
 
-        mean    = self.mean_linear(x)
+        mean = self.mean_linear(x)
         log_std = self.log_std_linear(x)
         log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
 
         return mean, log_std
+
+
 # ----------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------#
 
@@ -281,7 +287,6 @@ class Actor_Img(nn.Module):
         x = self.encoder(x)
         x = self.fc1(x)
         return x
-
 
 
 class Critic_Img(nn.Module):
@@ -386,36 +391,34 @@ class ModelNet_probabilistic_transition(nn.Module):
         nn.init.xavier_normal_(self.phi_layer[3].weight.data)
         nn.init.ones_(self.phi_layer[3].bias.data)
 
-
     def forward(self, state, action):
-        x   = torch.cat([state, action], dim=1)  # Concatenates the seq tensors in the given dimension
-        x   = self.initial_shared_layer(x)
+        x = torch.cat([state, action], dim=1)  # Concatenates the seq tensors in the given dimension
+        x = self.initial_shared_layer(x)
 
-        u   = self.mean_layer(x)
+        u = self.mean_layer(x)
         std = torch.clamp(self.std_layer(x), min=0.001)
         phi = self.phi_layer(x)
 
-        u   = torch.reshape(u,   (-1, 14, self.number_mixture_gaussians))
+        u = torch.reshape(u, (-1, 14, self.number_mixture_gaussians))
         std = torch.reshape(std, (-1, 14, self.number_mixture_gaussians))
         phi = torch.reshape(phi, (-1, 14, self.number_mixture_gaussians))
 
-        mix        = torch.distributions.Categorical(phi)
+        mix = torch.distributions.Categorical(phi)
         norm_distr = torch.distributions.Normal(u, std)
 
-        #comp = torch.distributions.Independent(norm_distr, 1)
+        # comp = torch.distributions.Independent(norm_distr, 1)
         gmm = torch.distributions.MixtureSameFamily(mix, norm_distr)
 
         return gmm
 
-# ------------------------------------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
 
 
 class ModelNet_deterministic_transition(nn.Module):
 
     def __init__(self, input_size, hidden_size):
-
         super(ModelNet_deterministic_transition, self).__init__()
 
         self.initial_shared_layer = nn.Sequential(
@@ -431,13 +434,13 @@ class ModelNet_deterministic_transition(nn.Module):
 
         self.output_layer = nn.Sequential(
             nn.Linear(hidden_size[1], hidden_size[2], bias=True),
-            #nn.BatchNorm1d(hidden_size[2]),
+            # nn.BatchNorm1d(hidden_size[2]),
             nn.ReLU(),
             nn.Linear(hidden_size[2], 14)
         )
 
     def forward(self, state, action):
-        x   = torch.cat([state, action], dim=1)  # Concatenates the seq tensors in the given dimension
-        x   = self.initial_shared_layer(x)
-        x   = self.output_layer(x)
+        x = torch.cat([state, action], dim=1)  # Concatenates the seq tensors in the given dimension
+        x = self.initial_shared_layer(x)
+        x = self.output_layer(x)
         return x
