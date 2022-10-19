@@ -52,4 +52,11 @@ Go to the Project Folder (We worked on robot_translation_v2_full_aruco)
 Run any file you want. The filename is self-explanatory
 `python3 {filename}`
 
+## Other Notes
+
+- Folder `robot_translation_v2_full_aruco_new` is used for a different setup and specifically Img State Space representation. We would not recommend to run algorithms in this folder as it contains legacy configuration
+
+
+
+
 
