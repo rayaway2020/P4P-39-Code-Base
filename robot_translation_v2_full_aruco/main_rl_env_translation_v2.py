@@ -2,11 +2,11 @@ import cv2
 import random
 import numpy as np
 from motor_utilities import Motor
-from vision_utilities import Vision
+from vision_utilities_whatever import Vision
 
 
 class RL_ENV:
-    def __init__(self, usb_index='/dev/ttyUSB0', camera_index=0):
+    def __init__(self, usb_index='/dev/ttyUSB1', camera_index=2):
 
         self.motors_config = Motor(usb_index)
         self.vision_config = Vision(camera_index)
@@ -34,11 +34,11 @@ class RL_ENV:
         print("Generating New Target Position")
         target_index = random.randint(0, 1)
         if target_index == 1:
-            self.target_in_pixel_x = random.randint(830, 870)
-            self.target_in_pixel_y = random.randint(370, 430)
+            self.target_in_pixel_x = random.randint(340, 430)
+            self.target_in_pixel_y = random.randint(310, 380)
         else:
-            self.target_in_pixel_x = random.randint(450, 500)
-            self.target_in_pixel_y = random.randint(370, 440)
+            self.target_in_pixel_x = random.randint(740, 840)
+            self.target_in_pixel_y = random.randint(310, 380)
 
         '''
         print("Generating New Target Position")
@@ -159,7 +159,7 @@ class RL_ENV:
         distance_cube_goal = np.linalg.norm(cube_position - target_position)  # millimeters distance
         # print("Distance to goal:", distance_cube_goal, "mm")
 
-        if distance_cube_goal <= 10:  # millimeters
+        if distance_cube_goal <= 15:  # millimeters
             print("GOAL SUCCESS, REWARD = 500")
             done = True
             reward_d = np.float64(500)
@@ -175,7 +175,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 
 class RL_ENV_Dis:
 
-    def __init__(self, usb_index='/dev/ttyUSB0', camera_index=0):
+    def __init__(self, usb_index='/dev/ttyUSB1', camera_index=1):
         self.goal_angle = 0.0
 
         # -----> Previous config
@@ -209,11 +209,11 @@ class RL_ENV_Dis:
         # Choose a new goal position, two possible values
         flip = random.randint(0, 1)
         if flip == 0:
-            self.target_in_pixel_x = random.randint(360.0, 480.0)
-            self.target_in_pixel_y = random.randint(300.0, 400.0)
+            self.target_in_pixel_x = random.randint(380, 440)
+            self.target_in_pixel_y = random.randint(330, 380)
         else:
-            self.target_in_pixel_x = random.randint(740.0, 840.0)
-            self.target_in_pixel_y = random.randint(300.0, 400.0)
+            self.target_in_pixel_x = random.randint(730, 805)
+            self.target_in_pixel_y = random.randint(350, 410)
 
     def state_space_function(self):
         while True:
@@ -259,11 +259,12 @@ class RL_ENV_Dis:
 
         distance_cube_goal = np.linalg.norm(self.cube_position - self.goal_position)
 
-        if distance_cube_goal <= 10:
+
+        if distance_cube_goal <= 15:
             print("GOAL SUCCESS, REWARD = 500")
             done = True
             reward_d = 500
         else:
             done = False
-            reward_d = -distance_cube_goal
+            reward_d = -distance_cube_goal/10
         return reward_d, done

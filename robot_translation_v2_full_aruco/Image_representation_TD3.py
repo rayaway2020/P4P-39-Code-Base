@@ -265,7 +265,7 @@ def run_exploration(env, episodes, horizont, agent):
 
 
 def main_run():
-    env = RL_ENV(usb_index='/dev/ttyUSB0', camera_index=0)
+    env = RL_ENV(usb_index='/dev/ttyUSB1', camera_index=1)
     agent = TD3_Agent_Img()
 
     num_exploration_episodes  = 800

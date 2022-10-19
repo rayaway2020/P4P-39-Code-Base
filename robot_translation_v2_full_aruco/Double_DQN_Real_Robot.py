@@ -16,11 +16,11 @@ from Networks import DQN_Net
 # Arguments needed for Algorithm
 class Arguments:
     def __init__(self):
-        self.seed = 0           # random seed
-        self.gamma = 0.9        # discount factor
+        self.seed = 0  # random seed
+        self.gamma = 0.9  # discount factor
         self.log_interval = 10  # interval between training status logs
-        self.num_actions = 8    # discretize action space
-        self.input_size = 16    # input size
+        self.num_actions = 8  # discretize action space
+        self.input_size = 16  # input size
 
 
 args = Arguments()
@@ -31,7 +31,7 @@ TrainingRecord = namedtuple('TrainingRecord', ['ep', 'reward'])
 Transition = namedtuple('Transition', ['s', 'a', 'r', 's_'])
 torch.set_num_threads(4)
 
-Memory = DQN_Memory(30000)
+Memory = DQN_Memory(20000)
 Net = DQN_Net(input_size=args.input_size, num_actions=args.num_actions)
 
 
@@ -189,6 +189,9 @@ class Agent:
     def save_best_param(self):
         torch.save(self.eval_net.state_dict(), 'best_dqn_net_params.pkl')
 
+    def save_during_param(self, input):
+        torch.save(self.eval_net.state_dict(), input)
+
     def load_param(self):
         self.eval_net.load_state_dict(torch.load('dqn_net_params.pkl'))
 
@@ -248,7 +251,7 @@ def main():
 
         for t in range(50):
             state, _ = env.state_space_function()
-            angles_steps = motor.get_angles_steps() # Current motor position in steps
+            angles_steps = motor.get_angles_steps()  # Current motor position in steps
             action, action_index = agent.select_action(state, angles_steps)
             print(action)
             crash = env.env_step_discrete(action)
@@ -265,6 +268,9 @@ def main():
             print("This is reward in this step")
             print(reward)
 
+            # First 400 Exploration
+            # Next 400: Half half (Partially Exploitation)
+            # After 800 Full Exploitation
             if agent.memory.isfull:
                 for i in range(0, 2):
                     q = agent.update()
@@ -308,6 +314,16 @@ def main():
             plt.xlabel('Episode')
             plt.ylabel('Reward')
             plt.savefig("double dqn" + i + ".png")
+
+        if i_ep % 50 == 0 and i_ep != 0:
+            j = str(i_ep / 50)
+            agent.save_during_param('double_dqn_during_params' + j + ".pkl")
+            plt.plot(rewards)
+            plt.plot(avg_rewards)
+            plt.title('Double DQN')
+            plt.xlabel('Episode')
+            plt.ylabel('Reward')
+            plt.savefig("double dqn during plots" + j + ".png")
 
     agent.save_param()
 
